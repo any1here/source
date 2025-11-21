@@ -20,6 +20,10 @@ jobs:
 
       - name: Run build
         run: |
+          make fetch
+          sh -c "./scripts/check-patchfail.sh"
+          make test-linux
+          # still produce source bundle artifacts
           make all
           make check-fuzz
           echo "VERSION=$(cat version)" >> variables.env
@@ -29,8 +33,9 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: librewolf-source
+          name: librewolf-build
           path: |
+            librewolf-*.tar.xz
             librewolf-*.source.tar.gz
             librewolf-*.source.tar.gz.sha256sum
             librewolf-*.source.tar.gz.sha512sum
