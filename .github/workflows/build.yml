@@ -37,7 +37,6 @@ jobs:
             libfreetype6-dev pkg-config automake libtool nasm ccache \
             python3-venv libgnutls28-dev libnss3-dev ninja-build clang lld \
             pigz gnupg jq rsync xz-utils
-          sudo pip3 install --upgrade pip setuptools wheel
 
       - name: Run build
         run: |
