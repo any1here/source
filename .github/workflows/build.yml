@@ -1,0 +1,39 @@
+name: Build
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up apt and install deps
+        run: |
+          sudo apt-get update && sudo apt-get -y upgrade
+          sudo apt-get -y install pigz gnupg
+
+      - name: Run build
+        run: |
+          make all
+          make check-fuzz
+          echo "VERSION=$(cat version)" >> variables.env
+          echo "RELEASE=$(cat release)" >> variables.env
+          echo "BUILD_JOB_ID=${{ github.run_id }}" >> variables.env
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: librewolf-source
+          path: |
+            librewolf-*.source.tar.gz
+            librewolf-*.source.tar.gz.sha256sum
+            librewolf-*.source.tar.gz.sha512sum
+            librewolf-*.source.tar.gz.sig
+            patchfail-fuzz.out
+            variables.env
