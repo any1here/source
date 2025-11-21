@@ -1,3 +1,6 @@
 [submodule "settings"]
 	path = settings
 	url = https://codeberg.org/librewolf/settings.git
+[submodule "codeberg"]
+	path = settings
+	url = https://codeberg.org/librewolf/settings
