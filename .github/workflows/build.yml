@@ -16,6 +16,23 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
+      - name: Move runner diag to big LV (bind-mount)
+        run: |
+          set -euo pipefail
+          LV_MOUNT="$GITHUB_WORKSPACE"
+          SRC="/home/runner/actions-runner/cached/_diag"
+          DEST="$LV_MOUNT/runner-cache/_diag"
+          sudo mkdir -p "$DEST"
+          sudo chown -R "$(id -u):$(id -g)" "$(dirname "$DEST")"
+          if [ -d "$SRC" ] && [ "$(find "$SRC" -mindepth 1 -print -quit 2>/dev/null)" ]; then
+            sudo rsync -a "$SRC/" "$DEST/" || true
+          fi
+          sudo mv "$SRC" "${SRC}.bak" 2>/dev/null || true
+          sudo mkdir -p "$SRC"
+          sudo mount --bind "$DEST" "$SRC"
+          sudo rm -rf "${SRC}.bak" || true
+        shell: bash
+
       - name: Diagnostics — verify build mount
         run: |
           echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
@@ -31,7 +48,6 @@ jobs:
       - name: Set up apt and install deps
         run: |
           sudo apt-get update
-          # avoid installing "Recommends" (prevents pulling transitional firefox snap via meta packages)
           APT_OPTS="-o APT::Install-Recommends=false -o APT::Install-Suggests=false"
           sudo apt-get $APT_OPTS -y install \
             build-essential autoconf2.13 python3 python3-dev python3-pip \
