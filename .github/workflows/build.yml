@@ -11,8 +11,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 4096
-          temp-reserve-mb: 2048
+          overprovision-lvm: 'true'
           remove-dotnet: 'true'
           remove-android: 'true'
           remove-haskell: 'true'
@@ -50,19 +49,11 @@ jobs:
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
 
-      - name: Set C/C++ caching env var
-        run: |
-          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-
       - name: Run build
         env:
           SCCACHE_PATH: ${{ env.SCCACHE_PATH }}
         run: |
-          make fetch
-          sh -c "./scripts/check-patchfail.sh"
-          make test-linux
-          make all
-          make check-fuzz
+          nice -n 10 ionice -c2 -n7 sh -c 'make fetch && ./scripts/check-patchfail.sh && make test-linux && make all && make check-fuzz'
           echo "VERSION=$(cat version)" >> variables.env
           echo "RELEASE=$(cat release)" >> variables.env
           echo "BUILD_JOB_ID=${{ github.run_id }}" >> variables.env
