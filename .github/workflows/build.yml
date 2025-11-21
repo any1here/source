@@ -11,35 +11,12 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
+          root-reserve-mb: 2048
           remove-dotnet: 'true'
           remove-android: 'true'
           remove-haskell: 'true'
           remove-codeql: 'true'
-
-      - name: Move runner diag to big LV (bind-mount)
-        run: |
-          set -euo pipefail
-          LV_MOUNT="$GITHUB_WORKSPACE"
-          SRC="/home/runner/actions-runner/cached/_diag"
-          DEST="$LV_MOUNT/runner-cache/_diag"
-          sudo mkdir -p "$DEST"
-          sudo chown -R "$(id -u):$(id -g)" "$(dirname "$DEST")"
-          if [ -d "$SRC" ] && [ "$(find "$SRC" -mindepth 1 -print -quit 2>/dev/null)" ]; then
-            sudo rsync -a "$SRC/" "$DEST/" || true
-          fi
-          sudo mv "$SRC" "${SRC}.bak" 2>/dev/null || true
-          sudo mkdir -p "$SRC"
-          sudo mount --bind "$DEST" "$SRC"
-          sudo rm -rf "${SRC}.bak" || true
-        shell: bash
-
-      - name: Diagnostics — verify build mount
-        run: |
-          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
-          df -h "$GITHUB_WORKSPACE" / /mnt
-          mount | grep buildvg || true
-          lsblk -f | grep buildvg || true
-
+          
       - name: Checkout
         uses: actions/checkout@v4
         with:
