@@ -16,6 +16,13 @@ jobs:
           remove-haskell: 'true'
           remove-codeql: 'true'
 
+      - name: Diagnostics — verify build mount
+        run: |
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          df -h "$GITHUB_WORKSPACE" / /mnt
+          mount | grep buildvg || true
+          lsblk -f | grep buildvg || true
+
       - name: Checkout
         uses: actions/checkout@v4
         with:
